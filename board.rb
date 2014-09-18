@@ -8,6 +8,14 @@ class Board
   
   protected 
   
+  def to_s
+    rows = ""
+    @grid.each_with_index do |row, row_num|
+      row += "#{row_num}  " + row.map do |square|
+        square.nil? ? "-" : square.symbol
+      
+  end
+  
   def [](position)
     @grid[position[0]][position[1]]
   end

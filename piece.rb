@@ -1,4 +1,4 @@
-# utf - 8
+# coding: utf-8
 
 class Piece
   
@@ -26,7 +26,7 @@ class Piece
   end
   
   def symbol
-    color == :black ? ⬤ ⭕
+    color == :black ? 
 
 
   end
