@@ -3,7 +3,6 @@
 class Piece
 
   attr_reader :color, :board, :king
-  attr_accessor :position
 
   SLIDES = [[ 1, -1 ], [ 1, 1 ], [ -1, -1 ], [ -1, 1 ]]
   JUMPS  = [[ 2, -2 ], [ 2, 2 ], [ -2, -2 ], [ -2, 2 ]]
@@ -50,11 +49,11 @@ class Piece
   end
 
   def symbol
+    return color == :black ? "♚" : "♔" if king
     color == :black ? "●" : "○"
   end
 
   def perform_moves!(*move_sequence)
-    puts "perform_moves!"
     start = position
     move_sequence.each do |end_pos|
       move_type = slide_or_jump?(start, end_pos)
@@ -67,11 +66,12 @@ class Piece
         raise "#{end_pos} makes this an invalid sequence of moves"
       end
     end
-    puts "it worked!"
     make_moves(*move_sequence)
   end
 
   private
+
+  attr_accessor :king, :position
 
   def make_moves(*move_sequence)
     move_sequence.each do |end_pos|
@@ -79,6 +79,8 @@ class Piece
       make_move(position, end_pos, move_type)
     end
 
+    row = move_sequence.last[0]
+    promote if (row == 7 && color == :black) || (row == 0 && color == :red)
   end
 
   def make_move(start_pos, end_pos, move_type)
@@ -121,6 +123,10 @@ class Piece
 
   def other_color
     color == :black ? :red : :black
+  end
+
+  def promote
+    self.king = true
   end
 
 end
