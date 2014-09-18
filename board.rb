@@ -1,5 +1,6 @@
-require 'debugger'
+require 'colorize'
 require_relative 'piece'
+
 
 class Board
 
@@ -31,10 +32,10 @@ class Board
   private
 
   def to_s
-    rows_string = "   " + ('0'..'7').to_a.join("  ") + "\n"
+    rows_string = "   " + ('a'..'h').to_a.join("  ") + "\n"
 
     @grid.each_with_index do |row, row_num|
-      rows_string += "#{row_num}  " + row.map do |piece|
+      rows_string += "#{row_num + 1}  " + row.map do |piece|
         piece.nil? ? "-" : piece.symbol
       end.join("  ") + "\n"
     end

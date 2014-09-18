@@ -1,6 +1,9 @@
 # coding: utf-8
+require_relative 'helper_methods'
 
 class Piece
+
+  include HelperMethods
 
   attr_reader :color, :board, :king
 
@@ -18,34 +21,6 @@ class Piece
     @board = board
 
     board[position] = self
-  end
-
-  def slide(start_pos, end_pos) #check legality, return boolean
-    #return all possible sliding steps (color dependant)
-    steps = legal_steps.select { |step| step.include?(1) || step.include?(-1) }
-    end_positions = steps.map { |step| try_step(start_pos, step) }
-    #slide is legal if there is no piece of either color to the diagonal
-    legal_end_positions = end_positions.select { |end_pos| board[end_pos].nil? }
-    #check if end_pos is one of the legal steps
-    legal_end_positions.include?(end_pos)
-  end
-
-  def jump(start_pos, end_pos) #check legality, return boolean
-    #return all possible jumping steps (color dependant)
-    steps = legal_steps.select { |step| step.include?(2) || step.include?(-2) }
-
-    end_positions = steps.map { |step| try_step(start_pos, step) }
-    #legal jump if no piece at the end_pos and different color piece in middle
-    ##REFACTOR TO METHOD LEGAL_JUMP
-    legal_end_positions = end_positions.select do |end_pos|
-      piece_at_end_pos = board[end_pos]
-      piece_in_middle = board[middle(start_pos, end_pos)]
-
-      piece_at_end_pos.nil? && !piece_in_middle.nil? &&
-      piece_in_middle.color != self.color
-    end
-    #check if end_pos is one of the legal steps
-    legal_end_positions.include?(end_pos)
   end
 
   def symbol
@@ -73,6 +48,37 @@ class Piece
 
   attr_accessor :king, :position
 
+  def slide(start_pos, end_pos) #check legality, return boolean
+    #return all possible sliding steps (color dependant)
+    steps = legal_steps.select { |step| step.include?(1) || step.include?(-1) }
+    end_positions = steps.map { |step| try_step(start_pos, step) }
+    #slide is legal if there is no piece of either color to the diagonal
+    legal_end_positions = end_positions.select { |end_pos| board[end_pos].nil? }
+    #check if end_pos is one of the legal steps
+    legal_end_positions.include?(end_pos)
+  end
+
+  def jump(start_pos, end_pos) #check legality, return boolean
+    #return all possible jumping steps (color dependant)
+    steps = legal_steps.select { |step| step.include?(2) || step.include?(-2) }
+
+    end_positions = steps.map { |step| try_step(start_pos, step) }
+    #legal jump if no piece at the end_pos and different color piece in middle
+    legal_end_positions = legal_jumps(start_pos, *end_positions)
+    #check if end_pos is one of the legal steps
+    legal_end_positions.include?(end_pos)
+  end
+
+  def legal_jumps(start_pos, *end_positions) #returns array of legal jump moves
+    end_positions.select do |end_pos|
+      piece_at_end_pos = board[end_pos]
+      piece_in_middle = board[middle(start_pos, end_pos)]
+
+      piece_at_end_pos.nil? && !piece_in_middle.nil? &&
+      piece_in_middle.color != self.color
+    end
+  end
+
   def make_moves(*move_sequence)
     move_sequence.each do |end_pos|
       move_type = slide_or_jump?(position, end_pos)
@@ -93,7 +99,7 @@ class Piece
   end
 
   def legal_steps
-    king ? MOVES_HASH[color] + MOVES_HASH[other_color] : MOVES_HASH[color]
+    king ? MOVES_HASH[color] + MOVES_HASH[other_color(color)] : MOVES_HASH[color]
   end
 
   def try_step(start_pos, step)
@@ -119,10 +125,6 @@ class Piece
     return :jump if JUMPS.include?(step)
     raise "This is neither a slide nor a jump."
 
-  end
-
-  def other_color
-    color == :black ? :red : :black
   end
 
   def promote
